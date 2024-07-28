@@ -1,0 +1,233 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/OAI/OpenAPI-Specification/main/schemas/v3.1/schema.json
+
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Chat app
+
+servers:
+  - url: http://localhost:8000
+
+paths:
+  ########################## User ##########################
+  /api/user/me:
+    get:
+      summary: get user info
+      description: get user info
+      responses:
+        "200":
+          description: Return user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+      tags:
+        - "user"
+      security:
+        - bearerAuth: []
+
+  ########################## Auth ##########################
+  /api/auth/login:
+    post:
+      summary: login a new chatter
+      description: login a new chatter
+      tags:
+        - "auth"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginUserRequest"
+      responses:
+        "200":
+          description: succ logged
+          headers:
+            Authorization:
+              $ref: "#/components/headers/AuthJWT"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/ServerError"
+      security:
+        - bearerAuth: []
+
+  /api/auth/signup:
+    post:
+      summary: signup a new chatter
+      description: signup a new chatter
+      tags:
+        - "auth"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "200":
+          description: succ signed up
+          headers:
+            Authorization:
+              $ref: "#/components/headers/AuthJWT"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          description: name is taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          $ref: "#/components/responses/ServerError"
+
+  ########################## Chat ##########################
+  /api/chat:
+    post:
+      summary: create a new chat
+      description: create a new chat
+      tags:
+        - "chat"
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChatRequest"
+
+      responses:
+        "201":
+          description: succ created chat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateChatResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          description: Not allowed to create a chat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: chat name is taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+      security:
+        - bearerAuth: []
+
+########################## Components ##########################
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  ########################## Schemas ##########################
+  schemas:
+    User:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+
+    CreateChatResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+
+    AuthToken:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+
+    CreateUserRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    LoginUserRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    CreateChatRequest:
+      type: object
+      required:
+        - chatName
+      properties:
+        chatName:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+  ########################## Headers ##########################
+  headers:
+    AuthJWT:
+      schema:
+        type: string
+        description: JWT bearer authorization token
+        example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjIwODE1NDMsImlhdCI6MTcyMTk5NTE0Mywic3ViIjoic3VjayJ9.R8x7nUOC5wL7V-ugl9ke1bf7xwDlF1fMKmHYnCx7mME
+
+  ########################## Responses ##########################
+  responses:
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    BadRequest:
+      description: Bad Request Syntax
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServerError:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

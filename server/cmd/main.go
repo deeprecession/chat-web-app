@@ -21,7 +21,14 @@ func main() {
 	log.Printf("Connected to a MongoDB! url=%q", mongoURI)
 
 	r := gin.Default()
-	r.Use(cors.Default())
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.ExposeHeaders = []string{"Authorization"}
+
+	corsMiddlware := cors.New(corsConfig)
+
+	r.Use(corsMiddlware)
 
 	server, err := api.NewServer(storage)
 	if err != nil {

@@ -1,10 +1,10 @@
-export interface userSignupInfo {
+export interface userLoginCreds {
 	username: string;
 	password: string;
 }
 
-export async function signUp(userInfo: userSignupInfo) {
-	const url = getSignUpURL();
+export async function login(userInfo: userLoginCreds) {
+	const url = gitLoginURL();
 
 	const query = {
 		method: "POST",
@@ -41,6 +41,6 @@ function storeAuthToken(response: Response) {
 	}
 }
 
-function getSignUpURL() {
-	return process.env.NEXT_PUBLIC_API_URI + "/api/auth/signup" || "/";
+function gitLoginURL() {
+	return process.env.NEXT_PUBLIC_API_URI + "/api/auth/login" || "/";
 }
